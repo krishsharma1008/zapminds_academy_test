@@ -1,47 +1,12 @@
-# netlify.toml (DEBUG — place at repo root, revert after debugging)
+# netlify.toml (place at repo root)
+
 [build]
   base    = "front-end"
-  # Use a TOML literal multiline string (''' ... ''') so backslashes are not processed.
-  command = '''
-    npm ci && npm run build
-    echo '=== build finished: current working dir ==='
-    pwd
-    echo ''
-    echo '=== list repo root (for Netlify this shows /opt/build/repo) ==='
-    ls -la $(pwd) || true
-    echo ''
-    echo '=== show front-end dir contents (relative to repo root) ==='
-    ls -la front-end || true
-    echo ''
-    echo '=== show front-end/.output (if any) ==='
-    ls -la front-end/.output || true
-    echo ''
-    echo '=== show front-end/.output/public (if any) ==='
-    ls -la front-end/.output/public || true
-    echo ''
-    echo '=== show front-end/.output/server (if any) ==='
-    ls -la front-end/.output/server || true
-    echo ''
-    echo '=== show repo-root .netlify (if any) ==='
-    ls -la .netlify || true
-    echo ''
-    echo '=== show .netlify/functions-internal (if any) ==='
-    ls -la .netlify/functions-internal || true
-    echo ''
-    echo '=== find any .output/public or .output/server anywhere under repo (maxdepth 4) ==='
-    find . -maxdepth 4 -type d \( -name ".output" -o -name ".output/public" -o -name ".output/server" -o -path "*/.netlify/*" \) -print || true
-    echo ''
-    echo '=== print summary existence checks (exit 0 regardless) ==='
-    if [ -d "front-end/.output/public" ]; then echo "FOUND: front-end/.output/public"; else echo "MISSING: front-end/.output/public"; fi
-    if [ -d "front-end/.output/server" ]; then echo "FOUND: front-end/.output/server"; else echo "MISSING: front-end/.output/server"; fi
-    if [ -d ".netlify/functions-internal" ]; then echo "FOUND: .netlify/functions-internal"; else echo "MISSING: .netlify/functions-internal"; fi
-    true
-  '''
+  command = "npm ci && npm run build"
   publish = ".output/public"
 
 [functions]
-  # keep the existing functions setting for now so the debug logs show the behavior
-  directory = "front-end/.output/server"
+  directory = ".output/server"
 
 [dev]
   command = "npm run --prefix front-end dev"
