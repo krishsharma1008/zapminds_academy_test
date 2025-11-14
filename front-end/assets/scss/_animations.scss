@@ -1,0 +1,200 @@
+// Vue Transitions
+.instant-in-fade-out-enter-active,
+.instant-in-fade-out-leave-active {
+  opacity: 1;
+  transition: opacity 0s;
+
+  @media (prefers-reduced-motion) {
+    transition: none !important;
+  }
+}
+
+.instant-in-fade-out-enter-from,
+.instant-in-fade-out-leave-to {
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+// XP System Animations
+
+// XP Float Animation - Used for XP award notifications
+@keyframes xp-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(0) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-10px) scale(1.2);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-50px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-100px) scale(0.8);
+  }
+}
+
+// Tier Glow Animation - Pulsing glow effect for tier badges
+@keyframes tier-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 10px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px currentColor)
+      drop-shadow(0 0 30px currentColor);
+  }
+}
+
+// Badge Reveal Animation - For newly earned badges
+@keyframes badge-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-180deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+// Confetti Animation - Celebration effect
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-100%) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+@keyframes confetti-sway {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(100px);
+  }
+}
+
+// XP Progress Ring Animation - Smooth progress fill
+@keyframes xp-progress-fill {
+  from {
+    stroke-dashoffset: var(--dash-array);
+  }
+  to {
+    stroke-dashoffset: var(--dash-offset);
+  }
+}
+
+// Pulse Animation - For attention-grabbing elements
+@keyframes pulse-scale {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Shimmer Animation - For loading states and highlights
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+// Bounce In Animation - For modals and notifications
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// Slide Up Animation - For bottom sheets and toasts
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Rotate Glow Animation - For special tier badges
+@keyframes rotate-glow {
+  0% {
+    transform: rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    filter: hue-rotate(360deg);
+  }
+}
+
+// Utility classes for animations
+.animate-xp-float {
+  animation: xp-float 2s ease-out forwards;
+}
+
+.animate-tier-glow {
+  animation: tier-glow 2s ease-in-out infinite;
+}
+
+.animate-badge-reveal {
+  animation: badge-reveal 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.animate-pulse {
+  animation: pulse-scale 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

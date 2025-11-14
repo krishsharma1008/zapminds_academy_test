@@ -1,0 +1,272 @@
+<script lang="ts" setup>
+import type { HomeQueryResult } from "~/types/sanity.types";
+import type { PortableTextBlock } from "@portabletext/types";
+import { useTimeoutFn } from "@vueuse/core";
+import { UIElements } from "~/assets/static-data/ui-elements";
+
+const props = defineProps<{
+  process?: NonNullable<HomeQueryResult>["processDescription"];
+  title?: NonNullable<HomeQueryResult>["invoicesTitle"];
+  description?: NonNullable<HomeQueryResult>["invoicesDescription"];
+}>();
+
+const { currentLevel } = useLevelExperience();
+
+const hasStarted = ref(true);
+const showCompleted = ref(false);
+
+// avoid hydration mismatch
+onMounted(() => {
+  hasStarted.value = false;
+});
+
+const onStart = () => {
+  hasStarted.value = true;
+};
+
+const onComplete = () => {
+  showCompleted.value = true;
+
+  useTimeoutFn(() => {
+    showCompleted.value = false;
+  }, 3500);
+};
+
+const { data } = await useFetch("/api/google-sheets");
+
+const invoices: ComputedRef<string[]> = computed(() => {
+  return data.value?.flat() || [];
+});
+
+// ZapMinds invoices description content formatted as PortableText blocks
+const zapMindsInvoicesDescription = computed(() => {
+  const invoiceCount = invoices.value.length;
+  return [
+    {
+      _type: "block",
+      _key: "zapminds-invoices-desc-1",
+      style: "normal",
+      children: [
+        {
+          _type: "span",
+          _key: "zapminds-invoices-desc-1-1",
+          text: "INNOVATE!",
+          marks: ["strong"],
+        },
+      ],
+      markDefs: [],
+    },
+    {
+      _type: "block",
+      _key: "zapminds-invoices-desc-2",
+      style: "normal",
+      children: [
+        {
+          _type: "span",
+          _key: "zapminds-invoices-desc-2-1",
+          text: `Each sphere represents one of the ${invoiceCount} innovative ideas and concepts that ZapMinds has explored and developed, scaled based on their potential impact and transformative value.`,
+          marks: [],
+        },
+      ],
+      markDefs: [],
+    },
+  ] as PortableTextBlock[];
+});
+
+// Use ZapMinds invoices description instead of CMS content
+const displayInvoicesDescription = zapMindsInvoicesDescription;
+
+// ZapMinds process description content formatted as PortableText blocks
+const zapMindsProcess: PortableTextBlock[] = [
+  {
+    _type: "block",
+    _key: "zapminds-process-1",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-process-1-1",
+        text: "ZapMinds collaborates with enterprises, startups, government agencies, and strategic partners to transform innovative ideas into scalable solutions. We work with clients across industries including hospitality, tourism, retail, and technology, helping them navigate the complexities of emerging technologies and digital transformation.",
+        marks: [],
+      },
+    ],
+  },
+  {
+    _type: "block",
+    _key: "zapminds-process-2",
+    style: "normal",
+    children: [
+      {
+        _type: "span",
+        _key: "zapminds-process-2-1",
+        text: "With expertise spanning GenAI, Agentic AI, and next-generation data platforms, ZapMinds has delivered innovative solutions through structured Proofs of Concept, Minimum Viable Products, and enterprise-grade frameworks. Each project contributes to our collective knowledge, continuously refining our approach to innovation and ensuring we stay at the forefront of technological advancement.",
+        marks: [],
+      },
+    ],
+  },
+];
+
+// Use ZapMinds process description instead of CMS content
+const displayProcess = computed(() => zapMindsProcess);
+</script>
+
+<template>
+  <div :class="$style.root" id="invoices">
+    <div :class="$style['top-separator']">
+      <VCanvasSeparator :invert-colors="true" />
+    </div>
+
+    <div :class="$style.intro" class="container grid" v-if="displayProcess">
+      <VSectionCounter :section="2" :class="$style['section-counter']" />
+      <div :class="$style.process">
+        <!-- @vue-ignore -->
+        <VSanityBlock :content="displayProcess" />
+      </div>
+    </div>
+
+    <div v-if="title" class="container grid">
+      <h2 :class="$style.title">
+        <VAnimatedTextByLetters :label="title" :align="'center'" />
+      </h2>
+    </div>
+
+    <div :class="$style['invoices-xp']">
+      <div :class="$style.wrapper">
+        <div :class="$style['middle-separator']">
+          <VCanvasSeparator />
+        </div>
+
+        <Transition appear name="instant-in-fade-out">
+          <div v-if="!hasStarted" :class="$style.guideline">
+            <VAnimatedTextByLetters
+              :label="UIElements.invoices.guideline"
+              :animate-colors="false"
+            />
+          </div>
+        </Transition>
+
+        <Transition appear name="instant-in-fade-out">
+          <div v-if="showCompleted" :class="$style.congratulations">
+            <VAnimatedTextByLetters
+              :label="UIElements.invoices.completed"
+              :animate-colors="false"
+            />
+          </div>
+        </Transition>
+
+        <VExpandableLegend :class="$style.legend" label="ideas scene">
+          <div :class="$style['legend-desc']" v-if="displayInvoicesDescription">
+            <!-- @vue-ignore -->
+            <SanityContent :blocks="displayInvoicesDescription" />
+          </div>
+        </VExpandableLegend>
+
+        <LazyVInvoicesScene
+          v-if="currentLevel >= 2"
+          :invoices-data="data"
+          @on-start="onStart"
+          @on-complete="onComplete"
+        />
+
+        <LazyVScrollToContinue hydrate-on-idle :level="3" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<style module lang="scss">
+.root {
+  position: relative;
+  padding-top: calc(var(--height-space) + 3rem);
+}
+
+.top-separator {
+  @include bottom-separator;
+  bottom: auto;
+  top: 0;
+}
+
+.intro {
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.section-counter {
+  inset: 3rem var(--gutter-size);
+}
+
+.process {
+  @include left-column-text;
+}
+
+.title {
+  position: relative;
+  z-index: 1;
+  grid-column: 7 / 19;
+  @include section-title;
+
+  @media screen and (max-aspect-ratio: 12 / 8) {
+    grid-column: 4 / 10;
+  }
+
+  @media screen and (orientation: portrait) {
+    grid-column: 2 / 12;
+  }
+}
+
+.invoices-xp {
+  height: 200lvh;
+  position: relative;
+}
+
+.wrapper {
+  position: sticky;
+
+  top: 0;
+  height: 100lvh;
+  margin: calc(var(--height-space) * 0.5) 0 0 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.middle-separator {
+  @include top-separator;
+}
+
+.guideline {
+  @include interaction-title;
+}
+
+.congratulations {
+  @include interaction-title;
+}
+
+.legend {
+  h3 {
+    font-family: var(--light-display-font);
+    line-height: 0.85;
+    font-weight: normal;
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin: 0 0 0.5em 0;
+  }
+
+  &-desc {
+    padding-right: calc(var(--gutter-size) * 2);
+
+    p {
+      strong {
+        font-family: var(--display-font);
+        font-weight: normal;
+        text-transform: uppercase;
+      }
+
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+</style>
