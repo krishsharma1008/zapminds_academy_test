@@ -1,16 +1,14 @@
 # netlify.toml (DEBUG — place at repo root, revert after debugging)
 [build]
   base    = "front-end"
-  # run the normal build then print file layout to help debugging (always exit 0)
-  command = """
+  # Use a TOML literal multiline string (''' ... ''') so backslashes are not processed.
+  command = '''
     npm ci && npm run build
     echo '=== build finished: current working dir ==='
     pwd
     echo ''
-    echo '=== list . (repo base) top-level dirs ==='
-    ls -la /
     echo '=== list repo root (for Netlify this shows /opt/build/repo) ==='
-    ls -la $(pwd)
+    ls -la $(pwd) || true
     echo ''
     echo '=== show front-end dir contents (relative to repo root) ==='
     ls -la front-end || true
@@ -38,11 +36,11 @@
     if [ -d "front-end/.output/server" ]; then echo "FOUND: front-end/.output/server"; else echo "MISSING: front-end/.output/server"; fi
     if [ -d ".netlify/functions-internal" ]; then echo "FOUND: .netlify/functions-internal"; else echo "MISSING: .netlify/functions-internal"; fi
     true
-  """
+  '''
   publish = ".output/public"
 
 [functions]
-  # keep the existing functions setting for now so the debug logs show the duplicate behavior
+  # keep the existing functions setting for now so the debug logs show the behavior
   directory = "front-end/.output/server"
 
 [dev]
