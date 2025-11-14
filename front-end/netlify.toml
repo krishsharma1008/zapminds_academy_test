@@ -9,9 +9,7 @@
   base = "front-end"
   command = "npm run build"
   publish = ".output/public"
+  functions = ".output/server"
 
-[build.environment]
-  NODE_ENV = "production"
-
-[functions]
-  directory = "front-end/.output/server"
+#[build.environment]
+#  NODE_ENV = "production"
