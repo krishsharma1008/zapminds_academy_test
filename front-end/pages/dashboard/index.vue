@@ -12,8 +12,26 @@ const {
   streakSummary,
   submissionsToday,
   reviewQueueCount,
+  recentBadges,
   refresh: refreshProgress,
 } = useUserProgress();
+
+// Format / sanitize badges for UI
+const formattedBadges = computed(() => {
+  const raw = recentBadges?.value ?? [];
+  return raw.map((b: any) => {
+    const earnedAt = b.earned_at ? new Date(b.earned_at) : null;
+    const earnedLabel = earnedAt
+      ? earnedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+      : 'Default';
+    return {
+      key: b.badge_key ?? '',
+      name: b.badge_name ?? 'Badge',
+      icon: b.badge_icon ?? '🥉',
+      earnedLabel,
+    };
+  });
+});
 
 const router = useRouter();
 
@@ -964,14 +982,31 @@ const onLogout = async () => {
           </div>
         </div>
 
-        <div :class="$style['hero-actions']">
-          <NuxtLink :class="$style['hero-cta']" to="/courses/current">
-            {{ UIElements.dashboard.continueCta }}
-          </NuxtLink>
+      <div :class="$style['badges-row']">
+        <ul :class="$style['badges-list']">
+          <li
+            v-for="badge in formattedBadges"
+            :key="badge.key"
+            :class="$style['badge-item']"
+          >
+            <span :class="$style['badge-icon']">{{ badge.icon }}</span>
+            <span :class="$style['badge-label']">{{ badge.name }}</span>
+          </li>
+        </ul>
+      </div>
 
-          <button type="button" :class="$style['hero-secondary']" @click="onLogout">
+        <div :class="$style['hero-actions']">
+          <!-- <NuxtLink :class="$style['hero-cta']" to="/courses/current">
+            {{ UIElements.dashboard.continueCta }}
+          </NuxtLink> -->
+
+          <NuxtLink :class="$style['hero-cta']" to="/courses/current">
+           {{ UIElements.auth.logoutCta }}
+          </NuxtLink>
+          
+          <!-- <button type="button" :class="$style['hero-secondary']" @click="onLogout">
             {{ UIElements.auth.logoutCta }}
-          </button>
+          </button> -->
         </div>
       </div>
 
@@ -1200,6 +1235,58 @@ const onLogout = async () => {
 </template>
 
 <style module lang="scss">
+.badges-row {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.badges-list {
+  display: flex;
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+
+  background: color-mix(in srgb, var(--foreground-color) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground-color) 15%, transparent);
+  box-shadow:
+    0 6px 12px color-mix(in srgb, #000 12%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--foreground-color) 6%, transparent);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 20px color-mix(in srgb, var(--foreground-color) 25%, transparent),
+      inset 0 0 14px color-mix(in srgb, var(--foreground-color) 10%, transparent);
+  }
+}
+
+.badge-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.badge-label {
+  font-family: var(--display-font);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
 .root {
   padding: calc(var(--height-space) * 0.25) 0 var(--height-space) 0;
   display: flex;

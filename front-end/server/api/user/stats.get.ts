@@ -160,6 +160,31 @@ export default defineEventHandler(async (event) => {
 
   const reviewQueueCount = 0; // Placeholder until review queue storage is implemented.
 
+  // const recentBadgesQuery = await supabase
+  //   .from("user_badges")
+  //   .select(
+  //     `badge_definitions:badge_definition_id(badge_key, badge_name, badge_icon), earned_at`
+  //   )
+  //   .eq("user_id", userId)
+  //   .order("earned_at", { ascending: false })
+  //   .limit(5);
+
+  // if (recentBadgesQuery.error) {
+  //   throw createError({
+  //     statusCode: 500,
+  //     statusMessage: `Failed to load badges: ${recentBadgesQuery.error.message}`,
+  //   });
+  // }
+
+  // const recentBadges = (recentBadgesQuery.data ?? []).map((row) => ({
+  //   badge_key: row.badge_definitions?.badge_key ?? "",
+  //   badge_name: row.badge_definitions?.badge_name ?? "",
+  //   badge_icon: row.badge_definitions?.badge_icon ?? null,
+  //   earned_at: row.earned_at ?? null,
+  // }));
+
+  
+  // fetch recent badges from DB (unchanged)
   const recentBadgesQuery = await supabase
     .from("user_badges")
     .select(
@@ -176,14 +201,44 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const recentBadges = (recentBadgesQuery.data ?? []).map((row) => ({
+  // map DB rows to simplified shape
+  const dbBadges = (recentBadgesQuery.data ?? []).map((row: any) => ({
     badge_key: row.badge_definitions?.badge_key ?? "",
     badge_name: row.badge_definitions?.badge_name ?? "",
     badge_icon: row.badge_definitions?.badge_icon ?? null,
     earned_at: row.earned_at ?? null,
   }));
 
-    // compute claimedToday from the already-fetched streak row
+  // Hardcoded default Bronze badge
+  const defaultBronze = {
+    badge_key: "bronze_tier",
+    badge_name: "Bronze Achiever",
+    badge_icon: "🥉",
+    earned_at: null, // null to indicate it was provided by fallback logic
+  };
+
+  // Build final list: always include Bronze first, then DB badges (dedupe by badge_key)
+  const badgeKeysSeen = new Set<string>();
+  const finalBadges: Array<typeof defaultBronze> = [];
+  
+  // Ensure Bronze is first (but avoid duplicating if DB already has it)
+  badgeKeysSeen.add(defaultBronze.badge_key);
+  finalBadges.push(defaultBronze);
+  
+  // Append DB badges, skipping any with same badge_key as bronze (or duplicates)
+  for (const b of dbBadges) {
+    if (!b.badge_key) continue; // skip malformed rows
+    if (badgeKeysSeen.has(b.badge_key)) continue;
+    badgeKeysSeen.add(b.badge_key);
+    finalBadges.push(b);
+  }
+  
+  // Optionally: if you want to preserve the original "limit(5)" semantics overall,
+  // you can slice here. Currently, this returns bronze + up to 5 recent DB badges.
+  const recentBadges = finalBadges; // export this to the rest of handler
+
+
+  // compute claimedToday from the already-fetched streak row
   const startOfDayUTC = new Date();
   startOfDayUTC.setUTCHours(0, 0, 0, 0);
 
