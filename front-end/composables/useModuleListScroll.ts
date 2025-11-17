@@ -74,34 +74,76 @@ export function useModuleListScroll(options: UseModuleListScrollOptions = {}) {
     resizeObserver.observe(scrollContainer);
   };
 
-  const toggleModuleList = () => {
-    const panel = moduleListInner.value;
-    if (!panel) {
-      isModuleListOpen.value = !isModuleListOpen.value;
-      return;
-    }
+  // const toggleModuleList = () => {
+  //   const panel = moduleListInner.value;
+  //   if (!panel) {
+  //     isModuleListOpen.value = !isModuleListOpen.value;
+  //     return;
+  //   }
 
-    const currentHeight = panel.scrollHeight;
+  //   const currentHeight = panel.scrollHeight;
 
-    if (isModuleListOpen.value) {
-      panel.style.height = `${currentHeight}px`;
-      panel.style.opacity = "1";
-      requestAnimationFrame(() => {
-        panel.style.height = "0px";
-        panel.style.opacity = "0";
-      });
-    } else {
+  //   if (isModuleListOpen.value) {
+  //     panel.style.height = `${currentHeight}px`;
+  //     panel.style.opacity = "1";
+  //     requestAnimationFrame(() => {
+  //       panel.style.height = "0px";
+  //       panel.style.opacity = "0";
+  //     });
+  //   } else {
+  //     panel.style.height = "0px";
+  //     panel.style.opacity = "0";
+  //     requestAnimationFrame(() => {
+  //       const targetHeight = panel.scrollHeight || currentHeight;
+  //       panel.style.height = `${targetHeight}px`;
+  //       panel.style.opacity = "1";
+  //     });
+  //   }
+
+  //   isModuleListOpen.value = !isModuleListOpen.value;
+  // };
+
+
+const toggleModuleList = () => {
+  const panel = moduleListInner.value;
+  if (!panel) {
+    isModuleListOpen.value = !isModuleListOpen.value;
+    return;
+  }
+
+  // Ensure we have an up-to-date measurement before toggling.
+  const currentHeight = panel.scrollHeight;
+
+  if (isModuleListOpen.value) {
+    // closing: animate from current height -> 0
+    panel.style.height = `${currentHeight}px`;
+    panel.style.opacity = "1";
+    // force a frame then collapse
+    requestAnimationFrame(() => {
       panel.style.height = "0px";
       panel.style.opacity = "0";
-      requestAnimationFrame(() => {
-        const targetHeight = panel.scrollHeight || currentHeight;
-        panel.style.height = `${targetHeight}px`;
-        panel.style.opacity = "1";
-      });
-    }
+    });
+  } else {
+    // opening: need to measure target height while content can size itself.
+    // Temporarily make height 'auto' so scrollHeight reflects content,
+    // then set height to 0 and animate to the measured height.
+    panel.style.height = "auto";
+    const targetHeight = panel.scrollHeight;
 
-    isModuleListOpen.value = !isModuleListOpen.value;
-  };
+    // Start from 0 so the animation runs
+    panel.style.height = "0px";
+    panel.style.opacity = "0";
+
+    // On the next frame, animate to the measured height
+    requestAnimationFrame(() => {
+      panel.style.height = `${targetHeight}px`;
+      panel.style.opacity = "1";
+    });
+  }
+
+  // flip the state; transitionend handler will set height to auto after open completes
+  isModuleListOpen.value = !isModuleListOpen.value;
+};
 
   const handlePanelTransitionEnd = (event: TransitionEvent) => {
     if (event.propertyName !== "height") return;
