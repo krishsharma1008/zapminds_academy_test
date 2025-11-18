@@ -429,7 +429,7 @@ const onSubmit = async (event: Event) => {
 }
 
 .input {
-  width: 100%;
+  width: 90%;
   border-radius: 0.95rem;
   border: 1px solid color-mix(in srgb, var(--foreground-color) 20%, transparent);
   padding: 0.95rem 1.1rem;
